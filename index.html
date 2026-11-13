@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Korean Practice — Tuesday, November 17</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Inter & Noto Sans KR -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media print {
+            header, nav, main, footer, #modal, .print-hide { display: none !important; }
+            #completion-screen { position: static !important; display: block !important; overflow: visible !important; }
+            #completion-certificate { box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-amber-50 text-slate-800 min-h-screen flex flex-col justify-between selection:bg-amber-200">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-amber-100 sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div class="flex items-center space-x-3">
+                <span class="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">Lesson 12</span>
+                <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Korean Practice — Tuesday, November 17</h1>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-3">
+                <label class="flex items-center gap-2 text-sm text-slate-700">
+                    <span class="font-semibold whitespace-nowrap">Student Name</span>
+                    <input id="student-name" type="text" autocomplete="name" placeholder="Enter your name"
+                        class="w-36 sm:w-44 px-3 py-2 rounded-lg border border-amber-300 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                </label>
+                <div class="flex items-center space-x-2 text-sm text-slate-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+                    <span>⭐ Total Score: <strong id="total-score" class="text-amber-600 font-bold text-base">0</strong> / 100 pts</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white border-b border-amber-200 shadow-xs">
+        <div class="max-w-5xl mx-auto flex overflow-x-auto px-4 space-x-2 py-2">
+            <button onclick="switchTab('vocab')" id="tab-vocab" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition whitespace-nowrap bg-amber-500 text-white shadow-xs">
+                📖 1. Vocabulary & Expressions
+            </button>
+            <button onclick="switchTab('dialogue')" id="tab-dialogue" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition whitespace-nowrap bg-white text-slate-600 hover:bg-amber-100">
+                💬 2. Dialogue Fill-in-the-Blanks
+            </button>
+            <button onclick="switchTab('grammar1')" id="tab-grammar1" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition whitespace-nowrap bg-white text-slate-600 hover:bg-amber-100">
+                🧩 3. Grammar Practice (-아/어서)
+            </button>
+            <button onclick="switchTab('grammar2')" id="tab-grammar2" class="tab-btn px-4 py-2 rounded-xl text-sm font-medium transition whitespace-nowrap bg-white text-slate-600 hover:bg-amber-100">
+                🎯 4. Sentence Building (-(으)러)
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="max-w-5xl mx-auto px-4 py-8 flex-grow w-full">
+
+        <!-- TAB 1: 어휘 및 표현 -->
+        <section id="content-vocab" class="space-y-6 fade-in">
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-amber-100">
+                <h2 class="text-xl font-bold text-slate-800 mb-2">Lesson 12: Essential Vocabulary & Communication</h2>
+                <p class="text-slate-600 text-sm mb-6">Click a card to hear its Korean pronunciation and review its meaning.</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4" id="vocab-grid">
+                    <!-- Dynamic Vocab Cards populated via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: 대화 빈칸 채우기 (클릭해서 넣기) -->
+        <section id="content-dialogue" class="space-y-6 fade-in hidden">
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-amber-100">
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Dialogue Fill-in-the-Blanks</h2>
+                        <p class="text-slate-600 text-sm">Choose an expression from the word bank to fill each blank in the dialogue.</p>
+                    </div>
+                    <button onclick="resetDialogue()" class="px-3 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition font-medium">Try Again</button>
+                </div>
+
+                <!-- 보기 박스 -->
+                <div class="bg-amber-50 border-2 border-dashed border-amber-300 rounded-2xl p-4 mb-6">
+                    <span class="text-xs font-bold text-amber-700 uppercase tracking-wider block mb-2">💡 &lt; Word Bank &gt;</span>
+                    <div id="word-bank" class="flex flex-wrap gap-2">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- 대화문 영역 -->
+                <div id="dialogue-container" class="space-y-6 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button onclick="checkDialogueAnswers()" class="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-md transition">
+                        Check Answers
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: 문법 연습 (-아/어서 이유) -->
+        <section id="content-grammar1" class="space-y-6 fade-in hidden">
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-amber-100">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xl font-bold text-slate-800">Reason & Result: <span class="text-amber-600">-아/어서</span></h2>
+                    <button onclick="renderMatchGame()" class="px-3 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition font-medium">Restart Matching</button>
+                </div>
+                <p class="text-slate-600 text-sm mb-6">Select a reason on the left, then choose its matching result on the right.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-3" id="match-left">
+                        <h3 class="font-bold text-sm text-slate-700">Reason (First Half)</h3>
+                        <!-- Left items -->
+                    </div>
+                    <div class="space-y-3" id="match-right">
+                        <h3 class="font-bold text-sm text-slate-700">Result (Second Half)</h3>
+                        <!-- Right items -->
+                    </div>
+                </div>
+
+                <!-- 완성된 문장 표시 영역 -->
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h3 class="font-bold text-base text-amber-800 mb-3 flex items-center gap-2">
+                        <span>✨ Completed Sentences</span>
+                        <span id="completed-count-badge" class="text-xs bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full font-normal">0 / 4</span>
+                    </h3>
+                    <div id="completed-sentences" class="space-y-2 min-h-[60px] p-4 bg-amber-50/50 rounded-xl border border-amber-200/60">
+                        <p class="text-sm text-slate-400 italic">Correctly matched sentences will appear here.</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-between items-center">
+                    <span id="match-feedback" class="text-sm font-medium text-slate-600"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: 문장 조합하기 (-(으)러 목적 표현) -->
+        <section id="content-grammar2" class="space-y-6 fade-in hidden">
+            <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-amber-100">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-xl font-bold text-slate-800">Purpose Expression: <span class="text-amber-600">-(으)러 가요/와요</span></h2>
+                    <span class="text-xs font-bold text-amber-700 bg-amber-100 px-3 py-1 rounded-full" id="puzzle-progress">Question 1 / 3</span>
+                </div>
+                <p class="text-slate-600 text-sm mb-6">Click the word blocks in the correct order to build a sentence.</p>
+
+                <div id="puzzle-card" class="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-6">
+                    <!-- Puzzle rendered via JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Completion certificate: shown after all questions are attempted -->
+    <section id="completion-screen" class="fixed inset-0 z-40 bg-amber-50 overflow-y-auto hidden" aria-label="Practice completion certificate">
+        <div class="min-h-screen flex items-center justify-center p-4 sm:p-8">
+            <div id="completion-certificate" class="w-full max-w-3xl bg-white border-8 border-double border-amber-400 rounded-3xl shadow-xl px-6 py-12 sm:px-12 sm:py-16 text-center space-y-6">
+                <p class="tracking-[0.15em] text-amber-700 font-bold text-sm sm:text-lg">KOREAN PRACTICE COMPLETED</p>
+                <div class="text-5xl" aria-hidden="true">🏆</div>
+                <h2 id="completion-student-name" class="text-3xl sm:text-5xl font-extrabold text-slate-900 break-words"></h2>
+                <p class="text-4xl sm:text-6xl font-black text-amber-600">GOOD JOB!</p>
+                <p class="text-3xl sm:text-5xl font-black text-emerald-600">EXCELLENT!</p>
+                <p class="text-lg sm:text-2xl font-bold text-slate-700">You have completed every question!</p>
+                <p class="text-xl sm:text-3xl font-extrabold text-slate-900">Final Score: <span id="completion-final-score">0</span> points</p>
+                <p class="text-sm sm:text-base text-slate-600">Take a screenshot of this screen and send it to your professor.</p>
+                <button type="button" onclick="closeCompletionScreen()" class="print-hide mt-4 px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl">Return to Practice</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Custom Notification / Message Modal -->
+    <div id="modal" class="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-xl text-center space-y-4 animate-scale">
+            <div id="modal-icon" class="text-4xl">🎉</div>
+            <h3 id="modal-title" class="text-lg font-bold text-slate-900">Correct!</h3>
+            <p id="modal-message" class="text-sm text-slate-600">Well done!</p>
+            <button onclick="closeModal()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition">
+                OK
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-amber-100 py-6 text-center text-xs text-slate-500 mt-12">
+        <p>Chungbuk National University Korean Language Program | Tuesday, November 17</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // --- State Management ---
+        let score = 0;
+        let activeTab = 'vocab';
+        // Track submitted answers separately from correctness.
+        let dialogueCompleted = false;
+        let dialogueBestCorrect = 0;
+        let matchingCompleted = false;
+        const puzzlesCompleted = new Set(); // attempted puzzle indices
+        const puzzlesCorrect = new Set();
+        let completionShown = false;
+
+        function refreshScoreAndCompletion() {
+            score = Math.round((dialogueBestCorrect / 4) * 25 +
+                    (matchingCompleted ? 35 : 0) + (puzzlesCorrect.size / puzzleData.length) * 40);
+            document.getElementById('total-score').textContent = score;
+            // Finishing every task is sufficient; a perfect score is NOT required.
+            if (dialogueCompleted && matchingCompleted && puzzlesCompleted.size === puzzleData.length) {
+                document.getElementById('completion-student-name').textContent =
+                    document.getElementById('student-name').value.trim() || 'Student';
+                document.getElementById('completion-final-score').textContent = score;
+                if (!completionShown) {
+                    completionShown = true;
+                    document.getElementById('completion-screen').classList.remove('hidden');
+                }
+            }
+        }
+
+        function closeCompletionScreen() {
+            document.getElementById('completion-screen').classList.add('hidden');
+        }
+        function reopenCompletionScreen() {
+            if (completionShown) {
+                document.getElementById('completion-student-name').textContent = document.getElementById('student-name').value.trim() || 'Student';
+                document.getElementById('completion-final-score').textContent = score;
+                document.getElementById('completion-screen').classList.remove('hidden');
+            }
+        }
+
+        // --- Data: Vocabulary ---
+        const vocabData = [
+            { term: "전화/연락하다", meaning: "To call / contact", example: "친구에게 전화를 해요." },
+            { term: "영상통화", meaning: "Video call", example: "스마트폰으로 영상통화를 해요." },
+            { term: "여보세요", meaning: "Hello (on the phone)", example: "여보세요? 누구세요?" },
+            { term: "메시지를 보내다", meaning: "To send a message", example: "친구에게 메시지를 보냈어요." },
+            { term: "메시지를 받다", meaning: "To receive a message", example: "문자 메시지를 받았어요." },
+            { term: "찾아보다", meaning: "To search / look up", example: "사전에서 단어를 찾아봐요." },
+            { term: "전화를 받다", meaning: "To answer the phone", example: "회의 중이라 전화를 못 받았어요." },
+            { term: "아르바이트", meaning: "Part-time job", example: "주말에 아르바이트를 해요." },
+            { term: "한국어 수업", meaning: "Korean language class", example: "수요일에만 한국어 수업을 해요." }
+        ];
+
+        // --- Data: Dialogue Activity ---
+        const dialogueData = {
+            sentences: [
+                {
+                    speaker: "가",
+                    textBefore: "여보세요, 자리나 씨? 저 아피나예요. 잘 ",
+                    blankId: 0,
+                    textAfter: "?",
+                    answer: "지내지요",
+                    hint: "지내지요"
+                },
+                {
+                    speaker: "나",
+                    textBefore: "아, 자리나 씨. ",
+                    blankId: 1,
+                    textAfter: ". 저는 잘 지내요.",
+                    answer: "오랜만이에요",
+                    hint: "오랜만이에요"
+                },
+                {
+                    speaker: "가",
+                    textBefore: "요즘도 ",
+                    blankId: 2,
+                    textAfter: "?",
+                    answer: "바빠요",
+                    hint: "바빠요"
+                },
+                {
+                    speaker: "나",
+                    textBefore: "네. 좀 바빠요. 가족들도 다 ",
+                    blankId: 3,
+                    textAfter: ".",
+                    answer: "건강해요",
+                    hint: "건강해요"
+                }
+            ],
+            bank: ["지내지요", "오랜만이에요", "바빠요", "건강해요", "아파요", "몰라요"]
+        };
+
+        let currentDialogueAnswers = {};
+
+        // --- Data: Grammar Matching (-아/어서) ---
+        const matchData = {
+            left: [
+                { id: 1, text: "머리가 너무 아파서", pairId: 1 },
+                { id: 2, text: "날씨가 너무 좋아서", pairId: 2 },
+                { id: 3, text: "따뜻한 옷이 없어서", pairId: 3 },
+                { id: 4, text: "전화를 안 받아서", pairId: 4 }
+            ],
+            right: [
+                { id: 1, text: "겨울옷을 사러 백화점에 가요.", pairId: 3 },
+                { id: 2, text: "문자를 보냈어요.", pairId: 4 },
+                { id: 3, text: "약을 먹고 누워 있어요.", pairId: 1 },
+                { id: 4, text: "공원에 산책하러 가요.", pairId: 2 }
+            ]
+        };
+
+        let selectedLeftId = null;
+        let userMatches = {}; // leftId -> rightId
+
+        // --- Data: Puzzle Combinations (-(으)러) ---
+        const puzzleData = [
+            {
+                prompt: "머리가 너무 아프다 + 약을 사다 + 약국에 가다",
+                blocks: ["약국에", "머리가 너무 아파서", "가요", "약을 사러"],
+                correctOrder: ["머리가 너무 아파서", "약을 사러", "약국에", "가요"]
+            },
+            {
+                prompt: "한국어를 배우고 싶다 + 한국에 오다",
+                blocks: ["한국에", "한국어를 배우러", "왔어요"],
+                correctOrder: ["한국어를 배우러", "한국에", "왔어요"]
+            },
+            {
+                prompt: "배가 고프다 + 밥을 먹다 + 식당에 가다",
+                blocks: ["식당에", "밥을 먹으러", "배가 고파서", "가요"],
+                correctOrder: ["배가 고파서", "밥을 먹으러", "식당에", "가요"]
+            }
+        ];
+
+        let currentPuzzleIndex = 0;
+        let selectedPuzzleBlocks = [];
+
+        // --- Initialization ---
+        window.onload = function() {
+            renderVocab();
+            renderDialogue();
+            renderMatchGame();
+            renderPuzzle();
+            document.getElementById('student-name').addEventListener('input', () => {
+                if (dialogueCompleted && matchingCompleted && puzzlesCompleted.size === puzzleData.length) {
+                    if (completionShown) {
+                        document.getElementById('completion-student-name').textContent = document.getElementById('student-name').value.trim() || 'Student';
+                    } else if (document.getElementById('student-name').value.trim()) {
+                        refreshScoreAndCompletion();
+                    }
+                }
+            });
+        };
+
+        // --- Tab Switching ---
+        function switchTab(tabId) {
+            activeTab = tabId;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-amber-500', 'text-white', 'shadow-xs');
+                btn.classList.add('bg-white', 'text-slate-600', 'hover:bg-amber-100');
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('bg-white', 'text-slate-600', 'hover:bg-amber-100');
+            document.getElementById(`tab-${tabId}`).classList.add('bg-amber-500', 'text-white', 'shadow-xs');
+
+            ['vocab', 'dialogue', 'grammar1', 'grammar2'].forEach(id => {
+                document.getElementById(`content-${id}`).classList.add('hidden');
+            });
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+        }
+
+        // --- 1. Vocab Rendering ---
+        function renderVocab() {
+            const grid = document.getElementById('vocab-grid');
+            grid.innerHTML = vocabData.map(v => `
+                <div class="bg-amber-50/50 hover:bg-amber-100/60 border border-amber-200/80 rounded-2xl p-4 transition shadow-xs flex flex-col justify-between cursor-pointer" onclick="speakWord('${v.term}')">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-slate-900 text-lg">${v.term}</h3>
+                            <span class="text-xs bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full font-medium">Listen 🔊</span>
+                        </div>
+                        <p class="text-sm font-medium text-amber-700">${v.meaning}</p>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-4 italic border-t border-amber-200/50 pt-2">"${v.example}"</p>
+                </div>
+            `).join('');
+        }
+
+        function speakWord(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ko-KR';
+                window.speechSynthesis.speak(utterance);
+            } else {
+                showModal("Notice", "Speech synthesis is not supported in this browser.", "📢");
+            }
+        }
+
+        // --- 2. Dialogue Activity ---
+        function renderDialogue() {
+            currentDialogueAnswers = {};
+            activeSelectedWord = null;
+            const container = document.getElementById('dialogue-container');
+            const bankContainer = document.getElementById('word-bank');
+
+            // Render word bank
+            const shuffledBank = [...dialogueData.bank].sort(() => Math.random() - 0.5);
+            bankContainer.innerHTML = shuffledBank.map(word => `
+                <button onclick="selectBankWord('${word}')" id="bank-${word}" class="px-4 py-2 bg-white hover:bg-amber-100 border border-amber-300 text-amber-800 rounded-xl font-medium shadow-2xs transition active:scale-95">
+                    ${word}
+                </button>
+            `).join('');
+
+            // Render sentences with blanks
+            container.innerHTML = dialogueData.sentences.map((s, idx) => `
+                <div class="flex items-start space-x-3 bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+                    <span class="font-bold text-amber-600 w-8 shrink-0">${s.speaker}:</span>
+                    <div class="text-slate-800 flex-grow flex flex-wrap items-center gap-1.5 leading-relaxed">
+                        <span>${s.textBefore}</span>
+                        <span onclick="clearBlank(${idx})" id="blank-slot-${idx}" class="min-w-[100px] px-3 py-1 bg-amber-50 border-2 border-dashed border-amber-300 text-amber-700 rounded-lg text-center cursor-pointer hover:bg-amber-100 transition inline-block text-sm font-semibold">
+                            ( Blank ${idx + 1} )
+                        </span>
+                        <span>${s.textAfter}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        let activeSelectedWord = null;
+
+        function selectBankWord(word) {
+            activeSelectedWord = word;
+            // Highlight selected word in bank
+            document.querySelectorAll('#word-bank button').forEach(b => {
+                if(b.innerText === word) b.classList.add('bg-amber-500', 'text-white');
+                else b.classList.remove('bg-amber-500', 'text-white');
+            });
+
+            // Find first empty blank slot to auto-fill
+            for(let i=0; i<dialogueData.sentences.length; i++) {
+                if(!currentDialogueAnswers[i]) {
+                    fillBlank(i, word);
+                    break;
+                }
+            }
+        }
+
+        function fillBlank(blankIdx, word) {
+            currentDialogueAnswers[blankIdx] = word;
+            const slot = document.getElementById(`blank-slot-${blankIdx}`);
+            slot.innerText = word;
+            slot.className = "min-w-[100px] px-3 py-1 bg-amber-600 border-2 border-amber-600 text-white rounded-lg text-center cursor-pointer transition inline-block text-sm font-semibold shadow-xs";
+            activeSelectedWord = null;
+            document.querySelectorAll('#word-bank button').forEach(b => b.classList.remove('bg-amber-500', 'text-white'));
+        }
+
+        function clearBlank(blankIdx) {
+            if(!currentDialogueAnswers[blankIdx]) return;
+            delete currentDialogueAnswers[blankIdx];
+            const slot = document.getElementById(`blank-slot-${blankIdx}`);
+            slot.innerText = `( Blank ${blankIdx + 1} )`;
+            slot.className = "min-w-[100px] px-3 py-1 bg-amber-50 border-2 border-dashed border-amber-300 text-amber-700 rounded-lg text-center cursor-pointer hover:bg-amber-100 transition inline-block text-sm font-semibold";
+        }
+
+        function resetDialogue() {
+            renderDialogue();
+        }
+
+        function checkDialogueAnswers() {
+            let correctCount = 0;
+            let total = dialogueData.sentences.length;
+            let allFilled = true;
+
+            for(let i=0; i<total; i++) {
+                const slot = document.getElementById(`blank-slot-${i}`);
+                if(!currentDialogueAnswers[i]) {
+                    allFilled = false;
+                    break;
+                }
+                
+                if(currentDialogueAnswers[i] === dialogueData.sentences[i].answer) {
+                    correctCount++;
+                    // 정답 스타일: 초록색/엠버 스타일 유지
+                    slot.className = "min-w-[100px] px-3 py-1 bg-emerald-600 border-2 border-emerald-600 text-white rounded-lg text-center cursor-pointer transition inline-block text-sm font-semibold shadow-xs";
+                } else {
+                    // 틀린 답 스타일: 요청에 따라 파란색(#2563eb / blue-600)으로 강조
+                    slot.className = "min-w-[100px] px-3 py-1 bg-blue-50 border-2 border-blue-600 text-blue-600 rounded-lg text-center cursor-pointer transition inline-block text-sm font-bold shadow-xs";
+                }
+            }
+
+            if(!allFilled) {
+                showModal("Notice", "Please fill in every blank.", "⚠️");
+                return;
+            }
+
+            dialogueCompleted = true;
+            dialogueBestCorrect = Math.max(dialogueBestCorrect, correctCount);
+            showModal(correctCount === total ? "Great work!" : "Answers checked",
+                `${correctCount} of ${total} answers are correct. ${correctCount < total ? 'Incorrect answers are highlighted in blue. You can try again, or continue.' : 'All answers are correct!'}`,
+                correctCount === total ? "👏" : "💡", refreshScoreAndCompletion);
+        }
+
+        // --- 3. Grammar Matching (-아/어서) ---
+        let completedPairs = [];
+        let wrongLeftId = null;
+        let wrongRightId = null;
+        let matchGameScored = false;
+
+        const normalMatchCardClass =
+            "p-3.5 bg-white border-2 border-slate-200 rounded-xl cursor-pointer hover:border-amber-400 font-medium text-slate-800 transition shadow-2xs";
+        const selectedMatchCardClass =
+            "p-3.5 bg-amber-50 border-2 border-amber-500 ring-2 ring-amber-200 rounded-xl cursor-pointer font-semibold text-amber-900 transition shadow-2xs";
+        const wrongMatchCardClass =
+            "p-3.5 bg-blue-50 border-2 border-blue-600 text-blue-700 font-bold rounded-xl shadow-2xs transition";
+        const completedMatchCardClass =
+            "p-3.5 bg-emerald-50 border-2 border-emerald-500 text-emerald-800 font-bold rounded-xl shadow-2xs pointer-events-none opacity-80 flex justify-between items-center";
+
+        function renderMatchGame() {
+            selectedLeftId = null;
+            userMatches = {};
+            completedPairs = [];
+            wrongLeftId = null;
+            wrongRightId = null;
+            matchGameScored = false;
+
+            const leftContainer = document.getElementById('match-left');
+            const rightContainer = document.getElementById('match-right');
+            const completedContainer = document.getElementById('completed-sentences');
+
+            const shuffledLeft = [...matchData.left].sort(() => Math.random() - 0.5);
+            const shuffledRight = [...matchData.right].sort(() => Math.random() - 0.5);
+
+            leftContainer.innerHTML =
+                `<h3 class="font-bold text-sm text-slate-700">Reason (First Half)</h3>` +
+                shuffledLeft.map(item => `
+                    <button type="button" onclick="clickLeftItem(${item.id})"
+                        id="left-item-${item.id}" class="${normalMatchCardClass} w-full text-left">
+                        ${item.text}
+                    </button>
+                `).join('');
+
+            rightContainer.innerHTML =
+                `<h3 class="font-bold text-sm text-slate-700">Result (Second Half)</h3>` +
+                shuffledRight.map(item => `
+                    <button type="button" onclick="clickRightItem(${item.id})"
+                        id="right-item-${item.id}" class="${normalMatchCardClass} w-full text-left">
+                        ${item.text}
+                    </button>
+                `).join('');
+
+            completedContainer.innerHTML =
+                `<p class="text-sm text-slate-400 italic">Correctly matched sentences will appear here.</p>`;
+            document.getElementById('completed-count-badge').innerText =
+                `0 / ${matchData.left.length}`;
+            document.getElementById('match-feedback').innerText =
+                "Choose a sentence on the left, then its matching result on the right.";
+        }
+
+        // 오답으로 파란색이 된 카드는 다음 시도를 시작할 때 기본 색으로 되돌립니다.
+        function clearWrongMatchHighlight() {
+            if (wrongLeftId !== null && !completedPairs.includes(wrongLeftId)) {
+                const leftEl = document.getElementById(`left-item-${wrongLeftId}`);
+                if (leftEl) leftEl.className = `${normalMatchCardClass} w-full text-left`;
+            }
+            if (wrongRightId !== null) {
+                const rightEl = document.getElementById(`right-item-${wrongRightId}`);
+                if (rightEl && !rightEl.disabled) {
+                    rightEl.className = `${normalMatchCardClass} w-full text-left`;
+                }
+            }
+            wrongLeftId = null;
+            wrongRightId = null;
+        }
+
+        function clickLeftItem(id) {
+            if (completedPairs.includes(id)) return;
+
+            // 새 시도를 시작하면 이전 오답의 파란색 표시를 정리합니다.
+            clearWrongMatchHighlight();
+            selectedLeftId = id;
+
+            matchData.left.forEach(item => {
+                if (completedPairs.includes(item.id)) return;
+                const el = document.getElementById(`left-item-${item.id}`);
+                if (!el) return;
+                el.className = item.id === id
+                    ? `${selectedMatchCardClass} w-full text-left`
+                    : `${normalMatchCardClass} w-full text-left`;
+            });
+
+            document.getElementById('match-feedback').innerText =
+                "Now choose the matching result on the right.";
+        }
+
+        function clickRightItem(rightId) {
+            if (selectedLeftId === null) {
+                document.getElementById('match-feedback').innerText =
+                    "Please select a reason on the left first.";
+                return;
+            }
+
+            const rightEl = document.getElementById(`right-item-${rightId}`);
+            if (!rightEl || rightEl.disabled) return;
+
+            const leftItem = matchData.left.find(item => item.id === selectedLeftId);
+            const rightItem = matchData.right.find(item => item.id === rightId);
+            const leftEl = document.getElementById(`left-item-${selectedLeftId}`);
+
+            if (!leftItem || !rightItem || !leftEl) return;
+
+            if (leftItem.pairId === rightItem.pairId) {
+                // 정답: 두 카드를 완료 처리하고 완성 문장을 아래에 추가합니다.
+                completedPairs.push(leftItem.id);
+
+                leftEl.className = completedMatchCardClass;
+                leftEl.disabled = true;
+                leftEl.innerHTML =
+                    `<span>${leftItem.text}</span><span class="text-xs bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">Done ✓</span>`;
+
+                rightEl.className = completedMatchCardClass;
+                rightEl.disabled = true;
+                rightEl.innerHTML =
+                    `<span>${rightItem.text}</span><span class="text-xs bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">Done ✓</span>`;
+
+                addCompletedSentence(`${leftItem.text} ${rightItem.text}`);
+                selectedLeftId = null;
+                document.getElementById('match-feedback').innerText =
+                    "Correct! Match another pair.";
+
+                if (completedPairs.length === matchData.left.length && !matchGameScored) {
+                    matchGameScored = true;
+                    const newlyCompleted = !matchingCompleted;
+                    matchingCompleted = true;
+                    showModal("Matching complete!", `You matched all four sentences! ${newlyCompleted ? '(+35 points)' : '(already completed)'}`, "🎯", refreshScoreAndCompletion);
+                }
+            } else {
+                // 오답: 앞 문장은 그대로 남기고 앞뒤 카드 모두 파란색으로 표시합니다.
+                leftEl.className = `${wrongMatchCardClass} w-full text-left`;
+                rightEl.className = `${wrongMatchCardClass} w-full text-left`;
+                wrongLeftId = leftItem.id;
+                wrongRightId = rightItem.id;
+                selectedLeftId = null;
+
+                document.getElementById('match-feedback').innerText =
+                    "Not a match. The two selected cards are highlighted in blue. Choose a reason to try again.";
+            }
+        }
+
+        function addCompletedSentence(sentenceText) {
+            const container = document.getElementById('completed-sentences');
+
+            if (completedPairs.length === 1) {
+                container.innerHTML = "";
+            }
+
+            const item = document.createElement('div');
+            item.className =
+                "p-3 bg-white border border-amber-300 rounded-xl shadow-2xs flex items-center space-x-3 fade-in";
+
+            const number = document.createElement('span');
+            number.className =
+                "w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0";
+            number.textContent = completedPairs.length;
+
+            const sentence = document.createElement('span');
+            sentence.className = "font-bold text-slate-800 text-base";
+            sentence.textContent = sentenceText;
+
+            item.append(number, sentence);
+            container.appendChild(item);
+
+            document.getElementById('completed-count-badge').innerText =
+                `${completedPairs.length} / ${matchData.left.length}`;
+        }
+
+        // --- 4. Puzzle Combinations (-(으)러) ---
+        function renderPuzzle() {
+            const puzzle = puzzleData[currentPuzzleIndex];
+            selectedPuzzleBlocks = [];
+            activePuzzleIndices = []; // New question must release the previous question's block indices.
+
+            document.getElementById('puzzle-progress').innerText = `Question ${currentPuzzleIndex + 1} / ${puzzleData.length}`;
+            
+            const shuffledBlocks = [...puzzle.blocks].sort(() => Math.random() - 0.5);
+
+            const container = document.getElementById('puzzle-card');
+            container.innerHTML = `
+                <div class="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                    <span class="text-xs font-bold text-amber-700 block mb-1">Situation / Meaning</span>
+                    <p class="font-bold text-slate-800 text-base">${puzzle.prompt}</p>
+                </div>
+
+                <div>
+                    <span class="text-xs font-bold text-slate-500 block mb-2">Your sentence:</span>
+                    <div id="selected-blocks-area" class="min-h-[60px] bg-white border-2 border-dashed border-amber-300 rounded-xl p-3 flex flex-wrap gap-2 items-center">
+                        <span class="text-slate-400 text-sm">Click the blocks below to build a sentence.</span>
+                    </div>
+                </div>
+
+                <div>
+                    <span class="text-xs font-bold text-slate-500 block mb-2">Available blocks (click to select):</span>
+                    <div id="bank-blocks-area" class="flex flex-wrap gap-2">
+                        ${shuffledBlocks.map((b, i) => `
+                            <button onclick="pickPuzzleBlock('${b}', ${i})" id="pblock-${i}" class="px-4 py-2.5 bg-white hover:bg-amber-100 border border-slate-300 text-slate-800 rounded-xl font-semibold transition shadow-2xs">
+                                ${b}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button onclick="resetPuzzleCurrent()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium text-sm transition">Clear Selection</button>
+                    <button onclick="checkPuzzleAnswer()" class="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-md text-sm transition">Check Answer</button>
+                </div>
+            `;
+        }
+
+        let activePuzzleIndices = [];
+
+        function pickPuzzleBlock(blockText, blockIndex) {
+            if(activePuzzleIndices.includes(blockIndex)) return;
+            activePuzzleIndices.push(blockIndex);
+            selectedPuzzleBlocks.push(blockText);
+
+            // Disable button in bank
+            const btn = document.getElementById(`pblock-${blockIndex}`);
+            btn.classList.add('opacity-40', 'bg-slate-100', 'cursor-not-allowed');
+            btn.disabled = true;
+
+            updatePuzzleDisplay();
+        }
+
+        function updatePuzzleDisplay() {
+            const area = document.getElementById('selected-blocks-area');
+            if(selectedPuzzleBlocks.length === 0) {
+                area.innerHTML = `<span class="text-slate-400 text-sm">Click the blocks below to build a sentence.</span>`;
+                return;
+            }
+
+            area.innerHTML = selectedPuzzleBlocks.map((b, idx) => `
+                <span class="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-sm font-bold shadow-2xs flex items-center space-x-1">
+                    <span>${b}</span>
+                </span>
+            `).join('');
+        }
+
+        function resetPuzzleCurrent() {
+            activePuzzleIndices = [];
+            selectedPuzzleBlocks = [];
+            renderPuzzle();
+        }
+
+        function checkPuzzleAnswer() {
+            const puzzle = puzzleData[currentPuzzleIndex];
+            if(selectedPuzzleBlocks.length !== puzzle.correctOrder.length) {
+                showModal("Notice", "Please select every word block before checking.", "⚠️");
+                return;
+            }
+
+            let isCorrect = true;
+            for(let i=0; i<puzzle.correctOrder.length; i++) {
+                if(selectedPuzzleBlocks[i] !== puzzle.correctOrder[i]) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+
+            puzzlesCompleted.add(currentPuzzleIndex);
+            if (isCorrect) puzzlesCorrect.add(currentPuzzleIndex);
+            const finalPuzzle = currentPuzzleIndex === puzzleData.length - 1;
+            showModal(isCorrect ? "Correct!" : "Answer checked",
+                isCorrect ? (finalPuzzle ? "You have finished the sentence-building activity!" : "Well done! Moving to the next question.")
+                          : (finalPuzzle ? "This answer was incorrect. You have finished all sentence-building questions." : "This answer was incorrect. Moving to the next question."),
+                isCorrect ? "👏" : "💡", () => {
+                    if (!finalPuzzle) {
+                        currentPuzzleIndex++;
+                        renderPuzzle();
+                    } else {
+                        document.getElementById('puzzle-progress').textContent = `Completed ${puzzleData.length} / ${puzzleData.length}`;
+                        document.getElementById('puzzle-card').innerHTML =
+                            `<div class="text-center space-y-4 py-8"><p class="text-xl font-bold text-amber-800">All 3 questions attempted!</p><p class="text-sm text-slate-600">You can now review your other activities.</p><button onclick="currentPuzzleIndex=0;renderPuzzle()" class="px-5 py-2 bg-amber-600 text-white rounded-xl">Practice again</button></div>`;
+                    }
+                    refreshScoreAndCompletion();
+                });
+        }
+
+        // --- Modal Control ---
+        let modalCallback = null;
+        function showModal(title, message, icon, callback = null) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('modal-icon').innerText = icon;
+            document.getElementById('modal').classList.remove('hidden');
+            modalCallback = callback;
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            if(modalCallback) {
+                modalCallback();
+                modalCallback = null;
+            }
+        }
+    </script>
+</body>
+</html>
